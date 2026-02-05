@@ -1,57 +1,61 @@
 # Security Policy — Sol Dorks
 
 ## Overview
-Sol Dorks is a non-custodial Solana tool that scans a connected wallet for empty SPL token accounts and allows the user to close them to reclaim locked SOL rent deposits. Sol Dorks cannot move user funds without explicit wallet signatures.
+Sol Dorks is a non-custodial Solana utility that allows users to identify and close empty SPL token accounts in order to reclaim locked SOL rent. The application operates entirely client-side and interacts with the Solana network using standard programs and user-approved wallet transactions.
+
+Sol Dorks does not custody funds, store private keys, or perform any actions without explicit user consent.
 
 ## What Sol Dorks Can Do
-- Read wallet public data (e.g., token accounts) through an RPC connection.
-- Build transactions that include instructions to close eligible empty token accounts.
-- Submit the user-signed transaction to the Solana network.
+- Read public wallet data (e.g. SPL token accounts) via a Solana RPC endpoint
+- Construct transactions to close eligible empty SPL token accounts
+- Submit user-signed transactions to the Solana network
 
 ## What Sol Dorks Cannot Do
-- Access or store private keys or seed phrases.
-- Sign transactions on behalf of the user.
-- Transfer tokens/SOL without the user approving the transaction in their wallet.
+- Access, store, or transmit private keys or seed phrases
+- Sign transactions on behalf of users
+- Move SOL or tokens without explicit wallet approval
+- Execute transactions automatically or in the background
+
+## Security Model
+Sol Dorks follows a strict non-custodial security model:
+- All transactions require explicit approval in the user’s wallet
+- The application never has signing authority
+- No backend services or custodial infrastructure are used
+- Only standard Solana programs are invoked (System Program, SPL Token Program)
 
 ## Trust Assumptions
-- The user’s wallet provider (e.g., Phantom/Solflare/etc.) correctly displays transaction details and requires explicit approval.
-- The RPC endpoint used by the app is not malicious (or the user chooses a trusted RPC).
-- The user reviews and approves only transactions they intend to sign.
+Users should be aware of the following trust assumptions:
+- The connected wallet correctly displays transaction details and requires approval
+- The RPC endpoint returns accurate and up-to-date on-chain data
+- The Solana runtime enforces program constraints (e.g. CloseAccount behavior)
 
-## Threat Model (Common Risks)
-### Malicious UI / Supply Chain
-If the website or dependencies are compromised, an attacker could attempt to trick users into signing unwanted transactions.
+## Known Risks and Mitigations
 
-Mitigations:
-- Use a locked dependency strategy (lockfiles).
-- Prefer audited, widely-used libraries.
-- Verify production builds and deployment pipeline integrity.
+### RPC Dependency
+The application relies on public RPC endpoints for account discovery and transaction submission.
 
-### RPC Manipulation / Inaccurate Reads
-A malicious RPC could return incorrect account data and attempt to influence what the UI displays.
-
-Mitigations:
-- The wallet signature requirement is the final gate.
-- Users should verify transaction details in the wallet before signing.
+Mitigation:
+- All state-changing actions require wallet approval
+- Users can review transactions in their wallet before signing
 
 ### User Error
-Users may accidentally close accounts or interact with the wrong wallet/network.
+Users may accidentally attempt to close accounts they do not intend to.
 
-Mitigations:
-- Clear UI warnings and transaction previews.
-- Conservative defaults (only show accounts that are empty and safe to close).
+Mitigation:
+- The UI only surfaces accounts with a zero token balance
+- Wallet confirmation acts as a final safeguard
 
-## Upgradeability / Admin Controls
-Sol Dorks is a client application. It does not custody funds.
-If Sol Dorks interacts with any on-chain program(s), upgrade authority details should be documented publicly (Program IDs + whether upgrade authority is retained or renounced).
+### Unsupported Token Programs
+Token accounts created under the Token-2022 program are not currently supported.
+
+Mitigation:
+- These accounts are ignored and cannot be closed through the interface
 
 ## Reporting a Vulnerability
-If you discover a security issue, please report it privately:
+If you believe you have discovered a security issue, please report it privately:
 
-- Email: security@soldorks.com (or replace with your preferred email)
-- Include: steps to reproduce, expected vs. actual behavior, and any relevant screenshots/tx links.
-
-We will acknowledge valid reports and aim to publish a fix and disclosure notes when appropriate.
+Email: security@soldorks.com  
+Include a clear description of the issue and steps to reproduce if possible.
 
 ## Disclaimer
-This project’s documentation may include self-audit and automated tooling results. This does not replace an independent third-party security audit. Undiscovered vulnerabilities may still exist.
+This documentation may reference public self-audit findings and automated tooling. It does not replace an independent third-party security audit. Undiscovered vulnerabilities may still exist.
